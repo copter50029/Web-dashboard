@@ -19,6 +19,7 @@ interface Transaction {
 
 export default function Home() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [totalTransactions, setTotalTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +36,7 @@ export default function Home() {
 
       if (result.success) {
         setTransactions(result.data);
+        setTotalTransactions(result.data);
       } else {
         setError(result.error || "Failed to fetch data");
       }
@@ -70,7 +72,10 @@ export default function Home() {
           setConnectionStatus("Connected");
           console.log("Connection established:", data.message);
         } else if (data.type === "transaction") {
-          setTransactions((prev) => [data.data, ...prev.slice(0, 49)]); // Keep last 50 transactions
+          // Add to recent transactions (limited to 50 for table display)
+          setTransactions((prev) => [data.data, ...prev.slice(0, 5)]);
+          // Add to total transactions (unlimited for analytics)
+          setTotalTransactions((prev) => [data.data, ...prev]);
         }
       } catch (err) {
         console.error("Error parsing SSE data:", err);
@@ -93,6 +98,11 @@ export default function Home() {
     setConnectionStatus("Disconnected");
   };
 
+  const clearAllData = () => {
+    setTransactions([]);
+    setTotalTransactions([]);
+  };
+
   useEffect(() => {
     fetchTransactions();
 
@@ -104,8 +114,8 @@ export default function Home() {
     };
   }, []);
 
-  const fraudCount = transactions.filter((t) => t.is_fraud).length;
-  const totalAmount = transactions.reduce((sum, t) => sum + t.amount, 0);
+  const fraudCount = totalTransactions.filter((t) => t.is_fraud).length;
+  const totalAmount = totalTransactions.reduce((sum, t) => sum + t.amount, 0);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -154,6 +164,14 @@ export default function Home() {
               Stop Stream
             </Button>
           )}
+
+          <Button
+            onClick={clearAllData}
+            variant="outline"
+            className="border-red-300 text-red-600 hover:bg-red-50"
+          >
+            Clear All Data
+          </Button>
         </div>
 
         {error && (
@@ -168,7 +186,7 @@ export default function Home() {
               Total Transactions
             </h3>
             <p className="text-3xl font-bold text-blue-600">
-              {transactions.length}
+              {totalTransactions.length}
             </p>
           </div>
 
@@ -178,8 +196,8 @@ export default function Home() {
             </h3>
             <p className="text-3xl font-bold text-red-600">{fraudCount}</p>
             <p className="text-sm text-gray-500">
-              {transactions.length > 0
-                ? `${((fraudCount / transactions.length) * 100).toFixed(
+              {totalTransactions.length > 0
+                ? `${((fraudCount / totalTransactions.length) * 100).toFixed(
                     1
                   )}% fraud rate`
                 : "0% fraud rate"}
@@ -190,7 +208,7 @@ export default function Home() {
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
               Fraud vs Valid Transactions
             </h3>
-            <PieChart03 transactions={transactions} />
+            <PieChart03 transactions={totalTransactions} />
           </div>
         </div>
 

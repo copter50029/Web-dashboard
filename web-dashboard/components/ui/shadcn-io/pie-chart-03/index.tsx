@@ -18,11 +18,11 @@ const chartConfig = {
   },
   fraud: {
     label: "Fraud",
-    color: "hsl(var(--destructive))", // Red color for fraud
+    color: "#ef4444", // Direct red color for fraud
   },
   valid: {
     label: "Valid",
-    color: "hsl(var(--primary))", // Blue color for valid
+    color: "#3b82f6", // Direct blue color for valid
   },
 } satisfies ChartConfig;
 
@@ -55,13 +55,13 @@ export function ChartPieLabel({
     {
       type: "fraud",
       count: fraudCount,
-      fill: "var(--color-fraud)",
+      fill: "#ef4444", // Direct red color
       percentage: ((fraudCount / totalTransactions) * 100).toFixed(1),
     },
     {
       type: "valid",
       count: validCount,
-      fill: "var(--color-valid)",
+      fill: "#3b82f6", // Direct blue color
       percentage: ((validCount / totalTransactions) * 100).toFixed(1),
     },
   ].filter((item) => item.count > 0); // Only show segments with data
@@ -101,11 +101,17 @@ export function ChartPieLabel({
       {/* Legend */}
       <div className="flex justify-center gap-4 text-xs">
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-full bg-red-500"></div>
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: "#ef4444" }}
+          ></div>
           <span className="font-medium">Fraud ({fraudCount})</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: "#3b82f6" }}
+          ></div>
           <span className="font-medium">Valid ({validCount})</span>
         </div>
       </div>
